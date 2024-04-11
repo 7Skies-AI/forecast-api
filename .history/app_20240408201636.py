@@ -24,7 +24,6 @@ def upload_file():
                 df=df, date_column=date_column, value_column=target_column, freq=freq
             )
             predict_dict = predict(interpolated_df, horizon, freq=freq)
-            return jsonify(predict_dict)
 
         except Exception as e:
             return {"error": str(e)}
