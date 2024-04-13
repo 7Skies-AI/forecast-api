@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  forecastapi:
+    image: forecastapi
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8000:8000
+    volumes:  # New section for volume mounting
+      - my-data-volume:/app/  # Example: Mount a named volume named "my-data-volume" to "/app/data" within the container
+
+volumes:  # Optional, define named volumes here (if not using a host directory)
+  my-data-volume:
