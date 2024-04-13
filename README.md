@@ -13,11 +13,11 @@ source .venv/bin/activate
 
 4. uv pip install -r requirements.txt
 
-5. flask --app app --debug run
+5. uvicorn main:app --reload
 
 Now app running on port  http://127.0.0.1:8000
 
-Send csv to http://127.0.0.1:5000/upload and it will return json with output prediction:
+Send csv to http://127.0.0.1:8000/upload and it will return json with output prediction:
 
 predictions: predictions
 dates: dates 
