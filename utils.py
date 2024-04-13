@@ -1,10 +1,7 @@
-import os
+import io
 
 import pandas as pd
-from statsforecast import StatsForecast
-from statsforecast.models import AutoARIMA
-
-os.environ["NIXTLA_ID_AS_COL"] = "1"
+import pmdarima as pm
 
 
 def interpolate_missing_dates(df, date_column, predict_column, freq="D"):
@@ -29,40 +26,66 @@ def interpolate_missing_dates(df, date_column, predict_column, freq="D"):
         start=df[date_column].min(), end=df[date_column].max(), freq=freq
     )
 
-    df = df.set_index(date_column).reindex(full_date_range).reset_index()
+    df = df.set_index(date_column).reindex(full_date_range).reset_index(names=["date"])
 
     df[predict_column] = df[predict_column].interpolate(method="linear")
-    df = df[[date_column, predict_column]]
+    # df = df.reset_index(drop )  # [[date_column, predict_column]]
 
     return df
 
 
-def read_file(uploaded_file):
+async def read_file(uploaded_file):
+    content = await uploaded_file.read()
     if uploaded_file.filename.endswith(".csv"):
-        df = pd.read_csv(uploaded_file)
+        df = pd.read_csv(io.StringIO(content.decode("utf-8")))
         return df
     elif uploaded_file.filename.endswith((".xls", ".xlsx")):
-        df = pd.read_excel(uploaded_file)
+        df = pd.read_excel(io.BytesIO(content))
         return df
     elif uploaded_file.filename.endswith(".parquet"):
-        df = pd.read_parquet(uploaded_file)
+        df = pd.read_parquet(io.BytesIO(content))
         return df
 
 
-def predict(df, date_column, horizon, freq="D"):
-    df[date_column] = pd.to_datetime(df[date_column])
+def sarimax_forecast(forecasted_df, periods):
+    # Forecast
+    n_periods = periods
+    SARIMAX_model = pm.auto_arima(
+        forecasted_df,  # exogenous=df[['month_index']],
+        start_p=1,
+        start_q=1,
+        test="adf",
+        max_p=3,
+        max_q=3,
+        m=12,
+        start_P=0,
+        seasonal=True,
+        d=None,
+        D=1,
+        trace=False,
+        error_action="ignore",
+        suppress_warnings=True,
+        stepwise=True,
+    )
+
+    fitted = SARIMAX_model.predict(
+        n_periods=n_periods,
+        return_conf_int=False,
+    )
+
+    # make series for plotting purpose
+    return {"prediction": fitted.tolist()}
+
+
+def predict(df, predict_column, date_column="date", horizon=1):
+    print(df.head())
+    # df = df.reset_index(drop=True)
+    # df = pd.read_csv("data.csv")
     last_date = df[date_column].max()
     new_dates = [
-        (last_date + pd.DateOffset(days=i)).strftime("%Y-%m-%d")
+        (pd.to_datetime(last_date) + pd.DateOffset(days=i)).strftime("%Y-%m-%d")
         for i in range(1, horizon + 1)
     ]
-    sf = StatsForecast(models=[AutoARIMA(season_length=12)], freq=freq)
-
-    sf.fit(df)
-    y_hat_dict = sf.predict(h=horizon, level=[90])
-    y_hat_dict["lo-90"] = y_hat_dict["lo-90"].tolist()
-    y_hat_dict["hi-90"] = y_hat_dict["hi-90"].tolist()
-    y_hat_dict["mean"] = y_hat_dict["mean"].tolist()
-    y_hat_dict["dates"] = new_dates
-
+    y_hat_dict = sarimax_forecast(df[[predict_column]], horizon)
+    y_hat_dict["dates"] = new_dates  # new_dates
     return y_hat_dict

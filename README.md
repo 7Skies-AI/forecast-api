@@ -15,12 +15,17 @@ source .venv/bin/activate
 
 5. flask --app app --debug run
 
-Now app running on port  http://127.0.0.1:5000
+Now app running on port  http://127.0.0.1:8000
 
-Send xml or csv to http://127.0.0.1:5000/upload and it will return json with output prediction:
+Send csv to http://127.0.0.1:5000/upload and it will return json with output prediction:
 
-lo-90
-hi-90
-mean: predictions
+predictions: predictions
 dates: dates 
 
+Test it in http://127.0.0.1:8000:
+upload data.csv
+freq: D
+target_column: values
+date_column: date
+horizon: 10
+predictions returned in json
