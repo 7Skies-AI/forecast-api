@@ -87,6 +87,7 @@ def sarimax_forecast(forecasted_df, periods):
 
 def predict(df, predict_column, date_column="date", horizon=1):
     print(df.head())
+    df = df.sort_values(by=date_column)
     df = df.head(1000)
     df = df.dropna(subset=[predict_column])
     df[predict_column] = df[predict_column].astype(float)
