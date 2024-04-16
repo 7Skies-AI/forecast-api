@@ -4,7 +4,9 @@ import pandas as pd
 import pmdarima as pm
 
 
-def interpolate_missing_dates(df, date_column, predict_column, freq="D"):
+def interpolate_missing_dates(
+    df: pd.DataFrame, date_column: str, predict_column: str, freq="D"
+):
     """
     Interpolates missing dates in a DataFrame using linear interpolation.
 
@@ -25,10 +27,11 @@ def interpolate_missing_dates(df, date_column, predict_column, freq="D"):
     full_date_range = pd.date_range(
         start=df[date_column].min(), end=df[date_column].max(), freq=freq
     )
-
-    df = df.set_index(date_column).reindex(full_date_range).reset_index(names=["date"])
+    df = df.drop_duplicates(subset=date_column)
+    df = df.set_index(date_column).reindex(full_date_range)
 
     df[predict_column] = df[predict_column].interpolate(method="linear")
+    df = df.reset_index(names=[date_column])
     # df = df.reset_index(drop )  # [[date_column, predict_column]]
 
     return df
@@ -37,8 +40,13 @@ def interpolate_missing_dates(df, date_column, predict_column, freq="D"):
 async def read_file(uploaded_file):
     content = await uploaded_file.read()
     if uploaded_file.filename.endswith(".csv"):
-        df = pd.read_csv(io.StringIO(content.decode("utf-8")))
-        return df
+        try:  # try to read as utf-8
+            df = pd.read_csv(io.StringIO(content.decode("utf-8")))
+            return df
+        except UnicodeDecodeError:
+            # try to read as iso-8859-1
+            df = pd.read_csv(io.StringIO(content.decode("iso-8859-1")))
+            return df
     elif uploaded_file.filename.endswith((".xls", ".xlsx")):
         df = pd.read_excel(io.BytesIO(content))
         return df
@@ -79,6 +87,9 @@ def sarimax_forecast(forecasted_df, periods):
 
 def predict(df, predict_column, date_column="date", horizon=1):
     print(df.head())
+    df = df.head(1000)
+    df = df.dropna(subset=[predict_column])
+    df[predict_column] = df[predict_column].astype(float)
     # df = df.reset_index(drop=True)
     # df = pd.read_csv("data.csv")
     last_date = df[date_column].max()
