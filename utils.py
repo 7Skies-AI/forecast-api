@@ -114,7 +114,7 @@ async def predict(
     predict_dict = await statsmodels_forecast(
         forecasted_df=df,
         frequency=freq,
-        horizon=int(horizon),
+        horizon=horizon,
         season_length=season_length,
     )
     print(f"Took {(time.time() - start):.2f} seconds to predict")

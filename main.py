@@ -22,6 +22,7 @@ async def upload_file(
     target_column: str = Form(...),
     date_column: str = Form(...),
     horizon: int = Form(...),
+    season_length: int = Form(...),
 ):
     # try:
     if file.filename == "":
@@ -39,6 +40,7 @@ async def upload_file(
         predict_column=target_column,
         date_column=date_column,
         horizon=horizon,
+        season_length=season_length,
     )
     return JSONResponse(content=predict_dict)
 
