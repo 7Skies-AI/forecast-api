@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -10,7 +10,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
@@ -34,7 +34,7 @@ async def upload_file(
     interpolated_df = interpolate_missing_dates(
         df=df, date_column=date_column, predict_column=target_column, freq=freq
     )
-    predict_dict = predict(
+    predict_dict = await predict(
         interpolated_df,
         predict_column=target_column,
         date_column=date_column,
