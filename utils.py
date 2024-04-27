@@ -97,7 +97,7 @@ async def statsmodels_forecast(forecasted_df, frequency, horizon, season_length)
         i for i in predictions_df.reset_index().to_dict()["AutoARIMA"].values()
     ]
     dates = [str(i) for i in predictions_df.reset_index().to_dict()["ds"].values()]
-    return {"prediction": predictions, "dates": dates}
+    return {"predictions": predictions, "dates": dates}
 
 
 async def predict(
