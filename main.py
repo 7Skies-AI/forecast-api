@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 from utils import interpolate_missing_dates, predict, read_file
 
-app = FastAPI()
+app = FastAPI(root_path='/forecast')
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
