@@ -37,11 +37,14 @@ def interpolate_missing_dates(
     df = df.set_index(date_column).reindex(full_date_range)
 
     if df[predict_column].dtype == "object":
-        df[predict_column] = df[predict_column].astype(str).replace("", pd.NA)
-        df = df.dropna(subset=[predict_column])
-        df[predict_column] = (
-            df[predict_column].apply(lambda x: re.sub(r"[^0-9.]", "", x)).astype(float)
+        df[predict_column] = df[predict_column].apply(
+            lambda x: re.sub(r"[^0-9.]", "", x)
         )
+        df[predict_column] = df[predict_column].apply(
+            lambda x: pd.to_numeric(x, errors="coerce")
+        )
+        df = df.dropna(subset=[predict_column])
+
     df[predict_column] = df[predict_column].interpolate(method="linear")
 
     df = df.reset_index(names=[date_column])
