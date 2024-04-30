@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 from utils import interpolate_missing_dates, predict, read_file
 
-app = FastAPI(root_path='/forecast')
+app = FastAPI(root_path="/forecast")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -51,4 +51,4 @@ async def upload_file(
 if __name__ == "__main__":
     import uvicorn
 
-     uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

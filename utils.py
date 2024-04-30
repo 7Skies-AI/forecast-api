@@ -1,5 +1,7 @@
 import io
+import re
 import time
+
 
 import pandas as pd
 from statsforecast import StatsForecast
@@ -34,7 +36,12 @@ def interpolate_missing_dates(
     df = df.drop_duplicates(subset=date_column)
     df = df.set_index(date_column).reindex(full_date_range)
 
+    if df[predict_column].dtype == "object":
+        df[predict_column] = (
+            df[predict_column].apply(lambda x: re.sub(r"[^0-9.]", "", x)).astype(float)
+        )
     df[predict_column] = df[predict_column].interpolate(method="linear")
+
     df = df.reset_index(names=[date_column])
     # df = df.reset_index(drop )  # [[date_column, predict_column]]
 
