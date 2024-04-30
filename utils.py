@@ -2,7 +2,6 @@ import io
 import re
 import time
 
-
 import pandas as pd
 from statsforecast import StatsForecast
 from statsforecast.models import AutoARIMA
@@ -38,7 +37,10 @@ def interpolate_missing_dates(
 
     if df[predict_column].dtype == "object":
         df[predict_column] = (
-            df[predict_column].apply(lambda x: re.sub(r"[^0-9.]", "", x)).astype(float)
+            df[predict_column]
+            .astype(str)
+            .apply(lambda x: re.sub(r"[^0-9.]", "", x))
+            .astype(float)
         )
     df[predict_column] = df[predict_column].interpolate(method="linear")
 
