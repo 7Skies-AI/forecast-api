@@ -9,6 +9,13 @@ from statsforecast.models import AutoARIMA
 # import pmdarima as pm
 
 
+def convert_float(x):
+    try:
+        return float(x)
+    except Exception:
+        return pd.NA
+
+
 def interpolate_missing_dates(
     df: pd.DataFrame, date_column: str, predict_column: str, freq="D"
 ):
@@ -36,14 +43,9 @@ def interpolate_missing_dates(
     df = df.dropna(subset=[predict_column])
     df = df.set_index(date_column).reindex(full_date_range)
 
-    if df[predict_column].dtype == "object":
-        df[predict_column] = df[predict_column].apply(
-            lambda x: re.sub(r"[^0-9.]", "", x)
-        )
-        df[predict_column] = df[predict_column].apply(
-            lambda x: pd.to_numeric(x, errors="coerce")
-        )
-        df = df.dropna(subset=[predict_column])
+    df[predict_column] = df[predict_column].apply(lambda x: re.sub(r"[^0-9.]", "", x))
+    df[predict_column] = df[predict_column].apply(lambda x: convert_float(x))
+    df = df.dropna(subset=[predict_column])
 
     df[predict_column] = df[predict_column].interpolate(method="linear")
 
