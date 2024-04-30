@@ -33,14 +33,14 @@ def interpolate_missing_dates(
         start=df[date_column].min(), end=df[date_column].max(), freq=freq
     )
     df = df.drop_duplicates(subset=date_column)
+    df = df.dropna(subset=[predict_column])
     df = df.set_index(date_column).reindex(full_date_range)
 
     if df[predict_column].dtype == "object":
+        df[predict_column] = df[predict_column].astype(str).replace("", pd.NA)
+        df = df.dropna(subset=[predict_column])
         df[predict_column] = (
-            df[predict_column]
-            .astype(str)
-            .apply(lambda x: re.sub(r"[^0-9.]", "", x))
-            .astype(float)
+            df[predict_column].apply(lambda x: re.sub(r"[^0-9.]", "", x)).astype(float)
         )
     df[predict_column] = df[predict_column].interpolate(method="linear")
 
