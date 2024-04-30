@@ -1,8 +1,10 @@
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
+
+
 from utils import interpolate_missing_dates, predict, read_file
 
 app = FastAPI(root_path="/forecast")
@@ -16,6 +18,8 @@ app.add_middleware(
     allow_methods=["*"],  # List of allowed HTTP methods (or "*" for all)
     allow_headers=["*"],  # List of allowed headers (or "*" for all)
 )
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
