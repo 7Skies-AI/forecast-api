@@ -119,7 +119,7 @@ async def statsmodels_forecast(forecasted_df, frequency, horizon, season_length)
 
 
 async def predict(
-    df, predict_column, date_column="date", horizon=1, freq="M", season_length=12
+    df, predict_column, date_column="date", horizon=1, freq="ME", season_length=12
 ):
     start = time.time()
     print(df.head())
@@ -136,7 +136,7 @@ async def predict(
         horizon=horizon,
         season_length=season_length,
     )
-    print(f"Took {(time.time() - start):.2f} seconds to predict")
+    # print(f"Took {(time.time() - start):.2f} seconds to predict")
     return predict_dict
     # df = df.reset_index(drop=True)
     # df = pd.read_csv("data.csv")

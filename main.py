@@ -52,7 +52,8 @@ async def upload_file(
         horizon=horizon,
         season_length=season_length,
     )
-    return JSONResponse(content=predict_dict)
+    
+    return predict_dict
 
     # except Exception as e:
     #    return JSONResponse(content={"error": str(e)})
