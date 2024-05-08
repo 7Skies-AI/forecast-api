@@ -112,7 +112,7 @@ async def statsmodels_forecast(forecasted_df, frequency, horizon, season_length)
     return {
         "actual": {
             "values": forecasted_df["y"].tolist(),
-            "dates": forecasted_df["ds"].dt.strftime("%Y-%m-%d").tolist(),
+            "dates": forecasted_df["ds"].astype(str).tolist(),
         },
         "predicted": {"values": predictions, "dates": dates},
     }
