@@ -31,9 +31,37 @@ async def upload_file(
     target_column: str = Form(...),
     date_column: str = Form(...),
     horizon: int = Form(...),
-    season_length: int = Form(...),
+    # season_length: int = Form(...),
 ):
+    """
+    Uploads a file and performs time series forecasting using the provided parameters.
+
+    Parameters:
+        file (UploadFile): The file to be uploaded.
+        freq (str): The frequency of the time series data. "D" for daily, "M" for monthly, "Y" for yearly.
+        target_column (str): The name of the target column in the file.
+        date_column (str): The name of the date column in the file.
+        horizon (int): The number of time steps to forecast into the future.
+
+    Returns:
+        dict: A dictionary containing the predicted values and corresponding dates.
+
+    Raises:
+        HTTPException: If the file format is unsupported.
+
+    """
     # try:
+    if freq.lower() == "d":
+        season_length = 365
+    elif freq.lower() == "m":
+        season_length = 12
+    elif freq.lower() == "y":
+        season_length = 1
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid frequency. Please use 'D' for daily, 'M' for monthly, or 'Y' for yearly.",
+        )
     if file.filename == "":
         raise HTTPException(
             status_code=400,
