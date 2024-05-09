@@ -29,13 +29,11 @@ async def interpolate_missing_dates(
 
     df = df.sort_values(by=date_column)
 
-    full_date_range = pd.date_range(
-        start=df[date_column].min(), end=df[date_column].max(), freq=freq
-    )
     df = df.drop_duplicates(subset=date_column)
+    df = df.set_index(date_column)
+    # df = df.interpolate(method="linear")
+    # df = df.asfreq(freq, method="ffill")
     df = df.dropna(subset=[predict_column])
-    df = df.set_index(date_column).reindex(full_date_range)
-
     if df[predict_column].dtype == "object":
         df[predict_column] = (
             df[predict_column].astype(str).apply(lambda x: re.sub(r"[^0-9.]", "", x))
@@ -44,12 +42,10 @@ async def interpolate_missing_dates(
             lambda x: pd.to_numeric(x, errors="coerce")
         )
         df = df.dropna(subset=[predict_column])
-
-    df[predict_column] = df[predict_column].interpolate(method="linear")
-
     df = df.reset_index(names=[date_column])
+    # df[date_column] = df[date_column]
+    # df = df.reset_index(names=[date_column])
     # df = df.reset_index(drop )  # [[date_column, predict_column]]
-    print(df)
     return df
 
 
@@ -110,6 +106,10 @@ async def statsmodels_forecast(forecasted_df, frequency, horizon, season_length)
     ]
     dates = [str(i) for i in predictions_df.reset_index().to_dict()["ds"].values()]
     return {
+        "actual": {
+            "values": forecasted_df["y"].tolist(),
+            "dates": forecasted_df["ds"].tolist(),
+        },
         "predicted": {"values": predictions, "dates": dates},
     }
 
@@ -118,7 +118,7 @@ async def predict(
     df, predict_column, date_column="date", horizon=1, freq="M", season_length=12
 ):
     start = time.time()
-    print(df.head())
+    # print(df.head())
     df = df.sort_values(by=date_column)
     df = df.head(1000)
     df = df.dropna(subset=[predict_column])

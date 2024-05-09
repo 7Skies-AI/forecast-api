@@ -49,13 +49,14 @@ async def upload_file(
         predict_column=target_column,
         date_column=date_column,
         horizon=horizon,
+        freq=freq,
         season_length=season_length,
     )
 
-    predict_dict["actual"] = {
-        "values": df[target_column].tolist(),
-        "dates": df[date_column].astype(str).tolist(),
-    }
+    # predict_dict["actual"] = {
+    #    "values": df[target_column].tolist(),
+    #    "dates": df[date_column].astype(str).tolist(),
+    # }
     return predict_dict
     # except Exception as e:
     #    return JSONResponse(content={"error": str(e)})
