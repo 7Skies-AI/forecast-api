@@ -4,7 +4,6 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-
 from utils import interpolate_missing_dates, predict, read_file
 
 app = FastAPI(root_path="/forecast")
@@ -42,7 +41,7 @@ async def upload_file(
         )
 
     df = await read_file(file)
-    interpolated_df = interpolate_missing_dates(
+    interpolated_df = await interpolate_missing_dates(
         df=df, date_column=date_column, predict_column=target_column, freq=freq
     )
     predict_dict = await predict(
@@ -52,9 +51,12 @@ async def upload_file(
         horizon=horizon,
         season_length=season_length,
     )
-    
-    return predict_dict
 
+    predict_dict["actual"] = {
+        "values": df[target_column].tolist(),
+        "dates": df[date_column].astype(str).tolist(),
+    }
+    return predict_dict
     # except Exception as e:
     #    return JSONResponse(content={"error": str(e)})
 

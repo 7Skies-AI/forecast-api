@@ -9,7 +9,7 @@ from statsforecast.models import AutoARIMA
 # import pmdarima as pm
 
 
-def interpolate_missing_dates(
+async def interpolate_missing_dates(
     df: pd.DataFrame, date_column: str, predict_column: str, freq="D"
 ):
     """
@@ -49,7 +49,7 @@ def interpolate_missing_dates(
 
     df = df.reset_index(names=[date_column])
     # df = df.reset_index(drop )  # [[date_column, predict_column]]
-
+    print(df)
     return df
 
 
@@ -110,10 +110,6 @@ async def statsmodels_forecast(forecasted_df, frequency, horizon, season_length)
     ]
     dates = [str(i) for i in predictions_df.reset_index().to_dict()["ds"].values()]
     return {
-        "actual": {
-            "values": forecasted_df["y"].tolist(),
-            "dates": forecasted_df["ds"].astype(str).tolist(),
-        },
         "predicted": {"values": predictions, "dates": dates},
     }
 
