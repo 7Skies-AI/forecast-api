@@ -2,3 +2,7 @@
 __pycache__/*
 .vscode
 .idea
+.xslx
+*.csv
+.Identifier
+Electric_Production.csv

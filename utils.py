@@ -3,8 +3,10 @@ import re
 import time
 
 import pandas as pd
-from statsforecast import StatsForecast
-from statsforecast.models import AutoARIMA
+
+# from statsforecast import StatsForecast
+# from statsforecast.models import AutoARIMA
+import statsmodels.api as sm
 
 # import pmdarima as pm
 
@@ -67,51 +69,31 @@ async def read_file(uploaded_file):
         return df
 
 
-# def sarimax_forecast(forecasted_df, periods):
-#    # Forecast
-#    n_periods = periods
-#    SARIMAX_model = pm.auto_arima(
-#        forecasted_df,  # exogenous=df[['month_index']],
-#        start_p=1,
-#        start_q=1,
-#        test="adf",
-#        max_p=3,
-#        max_q=3,
-#        m=12,
-#        start_P=0,
-#        seasonal=True,
-#        d=None,
-#        D=1,
-#        trace=False,
-#        error_action="ignore",
-#        suppress_warnings=True,
-#        stepwise=True,
-#    )
-#
-#   fitted = SARIMAX_model.predict(
-#       n_periods=n_periods,
-#       return_conf_int=False,
-#   )
-#
-#   # make series for plotting purpose
-#   return {"prediction": fitted.tolist()}
+async def sarimax_forecast(forecasted_df, periods):
+    model = sm.tsa.SARIMAX(
+        endog=forecasted_df, order=(2, 0, 0), seasonal_order=(3, 2, 3, 12), freq="MS"
+    )
+    model_fit = model.fit()
+    data = model_fit.forecast(steps=periods)
+
+    return data
 
 
-async def statsmodels_forecast(forecasted_df, frequency, horizon, season_length):
-    sf = StatsForecast(models=[AutoARIMA(season_length=season_length)], freq=frequency)
-    sf.fit(forecasted_df)
-    predictions_df = sf.predict(h=horizon)
-    predictions = [
-        i for i in predictions_df.reset_index().to_dict()["AutoARIMA"].values()
-    ]
-    dates = [str(i) for i in predictions_df.reset_index().to_dict()["ds"].values()]
-    return {
-        "actual": {
-            "values": forecasted_df["y"].tolist(),
-            "dates": forecasted_df["ds"].tolist(),
-        },
-        "predicted": {"values": predictions, "dates": dates},
-    }
+# async def statsmodels_forecast(forecasted_df, frequency, horizon, season_length):
+#    sf = StatsForecast(models=[AutoARIMA(season_length=season_length)], freq=frequency)
+#    sf.fit(forecasted_df)
+#    predictions_df = sf.predict(h=horizon)
+#    predictions = [
+#        i for i in predictions_df.reset_index().to_dict()["AutoARIMA"].values()
+#    ]
+#    dates = [str(i) for i in predictions_df.reset_index().to_dict()["ds"].values()]
+#    return {
+#        "actual": {
+#            "values": forecasted_df["y"].tolist(),
+#            "dates": forecasted_df["ds"].tolist(),
+#        },
+#        "predicted": {"values": predictions, "dates": dates},
+#    }
 
 
 async def predict(
@@ -119,21 +101,26 @@ async def predict(
 ):
     start = time.time()
     # print(df.head())
+    df = df[[predict_column, date_column]]
     df = df.sort_values(by=date_column)
+    df = df.set_index(date_column)
     df = df.head(1000)
-    df = df.dropna(subset=[predict_column])
     df[predict_column] = df[predict_column].astype(float)
-    df["unique_id"] = 1
-    df = df.rename(columns={date_column: "ds", predict_column: "y"})
-    df = df[["unique_id", "ds", "y"]]
-    predict_dict = await statsmodels_forecast(
-        forecasted_df=df,
-        frequency=freq,
-        horizon=horizon,
-        season_length=season_length,
-    )
+    df = df.dropna(subset=[predict_column])
+    print(df)
+    predict_data = await sarimax_forecast(forecasted_df=df, periods=horizon)
+
     print(f"Took {(time.time() - start):.2f} seconds to predict")
-    return predict_dict
+    return {
+        "actual": {
+            "dates": df.index.tolist(),
+            "values": df[predict_column].tolist(),
+            "predicted": {
+                "dates": predict_data.index.tolist(),
+                "values": predict_data.values.tolist(),
+            },
+        }
+    }
     # df = df.reset_index(drop=True)
     # df = pd.read_csv("data.csv")
     # last_date = df[date_column].max()
