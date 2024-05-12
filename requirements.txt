@@ -1,4 +1,5 @@
 fastapi==0.111.0
+numpy==1.23.5
 pandas==2.2.2
 statsforecast==1.4.0
 statsmodels==0.14.1

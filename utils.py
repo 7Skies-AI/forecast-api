@@ -2,11 +2,13 @@ import io
 import re
 import time
 
+import numpy as np
 import pandas as pd
 
 # from statsforecast import StatsForecast
 # from statsforecast.models import AutoARIMA
 import statsmodels.api as sm
+from fastapi import HTTPException
 
 # import pmdarima as pm
 
@@ -108,19 +110,24 @@ async def predict(
     df[predict_column] = df[predict_column].astype(float)
     df = df.dropna(subset=[predict_column])
     print(df)
-    predict_data = await sarimax_forecast(forecasted_df=df, periods=horizon)
+    try:
+        predict_data = await sarimax_forecast(forecasted_df=df, periods=horizon)
 
-    print(f"Took {(time.time() - start):.2f} seconds to predict")
-    return {
-        "actual": {
-            "dates": df.index.tolist(),
-            "values": df[predict_column].tolist(),
-            "predicted": {
-                "dates": predict_data.index.tolist(),
-                "values": predict_data.values.tolist(),
-            },
+        print(f"Took {(time.time() - start):.2f} seconds to predict")
+        return {
+            "actual": {
+                "dates": df.index.tolist(),
+                "values": df[predict_column].tolist(),
+                "predicted": {
+                    "dates": predict_data.index.tolist(),
+                    "values": predict_data.values.tolist(),
+                },
+            }
         }
-    }
+    except np.linalg.LinAlgError as err:
+        raise HTTPException(
+            status_code=404, detail="Data is too small. Try increasing your data size"
+        )
     # df = df.reset_index(drop=True)
     # df = pd.read_csv("data.csv")
     # last_date = df[date_column].max()
