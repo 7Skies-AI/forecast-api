@@ -27,7 +27,6 @@ async def index(request: Request):
 @app.post("/upload/")
 async def upload_file(
     file: UploadFile = File(...),
-    freq: str = Form(...),
     target_column: str = Form(...),
     date_column: str = Form(...),
     horizon: int = Form(...),
@@ -51,17 +50,17 @@ async def upload_file(
 
     """
     # try:
-    if freq.lower() == "d":
-        season_length = 365
-    elif freq.lower() == "m":
-        season_length = 12
-    elif freq.lower() == "y":
-        season_length = 1
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid frequency. Please use 'D' for daily, 'M' for monthly, or 'Y' for yearly.",
-        )
+    # if freq.lower() == "d":
+    #    season_length = 365
+    # elif freq.lower() == "m":
+    #    season_length = 12
+    # elif freq.lower() == "y":
+    #    season_length = 1
+    # else:
+    #    raise HTTPException(
+    #        status_code=400,
+    #        detail="Invalid frequency. Please use 'D' for daily, 'M' for monthly, or 'Y' for yearly.",
+    #    )
     if file.filename == "":
         raise HTTPException(
             status_code=400,
@@ -70,15 +69,17 @@ async def upload_file(
 
     df = await read_file(file)
     interpolated_df = await interpolate_missing_dates(
-        df=df, date_column=date_column, predict_column=target_column, freq=freq
+        df=df,
+        date_column=date_column,
+        predict_column=target_column,  # freq=freq
     )
     predict_dict = await predict(
         interpolated_df,
         predict_column=target_column,
         date_column=date_column,
         horizon=horizon,
-        freq=freq,
-        season_length=season_length,
+        #   freq=freq,
+        #   season_length=season_length,
     )
 
     # predict_dict["actual"] = {

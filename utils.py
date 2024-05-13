@@ -2,14 +2,12 @@ import io
 import re
 import time
 
-import numpy as np
 import pandas as pd
 
 # from statsforecast import StatsForecast
 # from statsforecast.models import AutoARIMA
 import statsmodels.api as sm
 from fastapi import HTTPException
-
 # import pmdarima as pm
 
 
@@ -124,7 +122,7 @@ async def predict(
                 },
             }
         }
-    except np.linalg.LinAlgError as err:
+    except Exception as e:
         raise HTTPException(
             status_code=404, detail="Data is too small. Try increasing your data size"
         )
