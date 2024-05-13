@@ -7,3 +7,4 @@ __pycache__/*
 .Identifier
 Electric_Production.csv
 *.ipynb
+*.pyc

@@ -37,7 +37,6 @@ async def upload_file(
 
     Parameters:
         file (UploadFile): The file to be uploaded.
-        freq (str): The frequency of the time series data. "D" for daily, "M" for monthly, "Y" for yearly.
         target_column (str): The name of the target column in the file.
         date_column (str): The name of the date column in the file.
         horizon (int): The number of time steps to forecast into the future.

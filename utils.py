@@ -8,6 +8,8 @@ import pandas as pd
 # from statsforecast.models import AutoARIMA
 import statsmodels.api as sm
 from fastapi import HTTPException
+
+
 # import pmdarima as pm
 
 
@@ -71,7 +73,9 @@ async def read_file(uploaded_file):
 
 async def sarimax_forecast(forecasted_df, periods):
     model = sm.tsa.SARIMAX(
-        endog=forecasted_df, order=(2, 0, 0), seasonal_order=(3, 2, 3, 12), freq="MS"
+        endog=forecasted_df,
+        order=(2, 0, 0),
+        seasonal_order=(3, 2, 3, 12),  # freq="MS"
     )
     model_fit = model.fit()
     data = model_fit.forecast(steps=periods)
