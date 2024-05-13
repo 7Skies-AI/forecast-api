@@ -119,12 +119,12 @@ async def predict(
         return {
             "actual": {
                 "dates": df.index.tolist(),
-                "values": df[predict_column].tolist(),
+                "values": df[predict_column].tolist()
+            },
                 "predicted": {
                     "dates": predict_data.index.tolist(),
                     "values": predict_data.values.tolist(),
                 },
-            }
         }
     except Exception as e:
         raise HTTPException(
